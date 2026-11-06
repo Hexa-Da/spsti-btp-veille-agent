@@ -1,0 +1,15 @@
+.DS_Store
+.env
+__pycache__
+
+# Données runtime
+data/candidats.json
+data/selection.json
+data/retenus.json
+data/rapport.md
+data/exports/*.docx
+
+### Agentic Workflow ###
+.cursor
+memoire
+tasks

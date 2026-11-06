@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Veille médecine du travail — sélection</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Veille médecine du travail</h1>
+      <p class="period">Cochez les articles à garder, puis générez le rapport Word.</p>
+    </div>
+  </header>
+  <main class="wrap">
+    <p id="meta" class="note"></p>
+    <div class="toolbar">
+      <button type="button" id="btn-all">Tout cocher</button>
+      <button type="button" id="btn-none">Tout décocher</button>
+      <button type="button" id="btn-save" class="primary">Enregistrer la sélection</button>
+      <button type="button" id="btn-gen" class="primary">Générer le Word</button>
+    </div>
+    <p id="status" class="note" role="status"></p>
+    <div id="list"></div>
+  </main>
+  <footer>
+    <div class="wrap">Les synthèses ne remplacent pas la lecture des textes officiels.</div>
+  </footer>
+  <script src="/assets/app.js"></script>
+</body>
+</html>
