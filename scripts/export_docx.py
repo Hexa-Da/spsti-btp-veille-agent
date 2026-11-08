@@ -45,6 +45,18 @@ def _p(text: str, *, bold: bool = False) -> str:
     return f'<w:p><w:r><w:t xml:space="preserve">{run}</w:t></w:r></w:p>'
 
 
+_MD_LINK = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
+
+
+def _plain(line: str) -> str:
+    # [libellé](url) → url (ou libellé s'il diffère et n'est pas l'url)
+    def repl(m: re.Match[str]) -> str:
+        label, url = m.group(1).strip(), m.group(2).strip()
+        return url if (not label or label == url) else label
+
+    return _MD_LINK.sub(repl, re.sub(r"[*_`]", "", line))
+
+
 def md_to_paragraphs(md: str) -> list[str]:
     paras: list[str] = []
     for line in md.splitlines():
@@ -54,13 +66,13 @@ def md_to_paragraphs(md: str) -> list[str]:
         # titres markdown → gras
         m = re.match(r"^(#{1,6})\s+(.*)$", line)
         if m:
-            paras.append(_p(m.group(2).strip(), bold=True))
+            paras.append(_p(_plain(m.group(2).strip()), bold=True))
             continue
         # listes
         if re.match(r"^[-*]\s+", line):
-            paras.append(_p("• " + re.sub(r"^[-*]\s+", "", line)))
+            paras.append(_p("• " + _plain(re.sub(r"^[-*]\s+", "", line))))
             continue
-        paras.append(_p(re.sub(r"[*_`]", "", line)))
+        paras.append(_p(_plain(line)))
     return paras
 
 

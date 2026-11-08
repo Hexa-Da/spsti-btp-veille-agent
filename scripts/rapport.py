@@ -25,12 +25,26 @@ def build_prompt(retenus: dict, doctrine: str) -> str:
 {payload}
 
 ## Mission
-Rédige un rapport Markdown en français :
-1. Un titre daté (Veille médecine du travail — AAAA-MM-JJ).
-2. Un résumé d'ensemble (1 à 3 paragraphes) des points importants.
-3. Une section « Articles retenus » : pour chaque item, titre, 3–6 phrases de synthèse, source, date, lien.
+Rédige un rapport Markdown en français, strictement sur ce canevas :
 
-Ton sobre et factuel. Pas d'emoji. Ne fabrique pas d'URL. Réponds uniquement avec le Markdown du rapport (pas de préambule).
+```
+# Veille médecine du travail — AAAA-MM-JJ
+
+### <titre du 1er article>
+<synthèse enrichie>
+**Source** : <nom de la source>
+**Date** : <date en français>
+**Lien** : <URL exacte>
+
+### <titre du 2nd article>
+<synthèse enrichie>
+**Source** : <nom de la source>
+**Date** : <date en français>
+**Lien** : <URL exacte>
+```
+
+Un bloc `###` + synthèse + Source/Date/Lien par article retenu, dans le même ordre que le JSON.
+Ton sobre et factuel. Pas d'emoji. Ne fabrique pas d'URL.
 """
 
 
