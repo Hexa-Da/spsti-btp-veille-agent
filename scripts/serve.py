@@ -1,20 +1,18 @@
 #!/usr/bin/env python3
 """UI locale (stdlib http.server) : collecte, sélection, rapport Word."""
 
-from __future__ import annotations
-
 import json
 import mimetypes
+import os
 import subprocess
 import sys
 import threading
 import webbrowser
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
 from urllib.parse import urlparse
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from common import (
     CANDIDATS_PATH,
@@ -28,7 +26,7 @@ from common import (
 )
 
 PORT = 8787
-_SCRIPTS = ROOT / "scripts"
+_SCRIPTS = os.path.join(ROOT, "scripts")
 _job_lock = threading.Lock()
 # État du job long (collecte / génération) — le POST démarre, GET /api/job suit.
 _job: dict = {"status": "idle"}
@@ -38,8 +36,8 @@ def _run_scripts(names: list[str]) -> tuple[bool, list[dict]]:
     logs = []
     for name in names:
         proc = subprocess.run(
-            [sys.executable, str(_SCRIPTS / name)],
-            cwd=str(ROOT),
+            [sys.executable, os.path.join(_SCRIPTS, name)],
+            cwd=ROOT,
             capture_output=True,
             text=True,
         )
@@ -81,8 +79,15 @@ def _start_job(kind: str, scripts: list[str]) -> bool:
                 return
             # generer
             reset_pipeline_json()
-            exports = sorted(EXPORTS.glob("veille-*.docx")) if EXPORTS.is_dir() else []
-            latest = str(exports[-1]) if exports else None
+            if os.path.isdir(EXPORTS):
+                exports = sorted(
+                    os.path.join(EXPORTS, name)
+                    for name in os.listdir(EXPORTS)
+                    if name.startswith("veille-") and name.endswith(".docx")
+                )
+            else:
+                exports = []
+            latest = exports[-1] if exports else None
             _job = {
                 "status": "done",
                 "ok": True,
@@ -137,7 +142,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         path = urlparse(self.path).path
         if path in ("/", "/index.html"):
-            return self._file(WEB / "index.html")
+            return self._file(os.path.join(WEB, "index.html"))
         if path == "/api/job":
             return self._json(200, _job)
         if path == "/api/candidats":
@@ -147,9 +152,9 @@ class Handler(BaseHTTPRequestHandler):
             data = read_json(SELECTION_PATH, default={"selectedIds": [], "updatedAt": None})
             return self._json(200, data)
         if path.startswith("/web/"):
-            return self._file(ROOT / path.lstrip("/"))
+            return self._file(os.path.join(ROOT, path.lstrip("/")))
         if path.startswith("/assets/"):
-            return self._file(WEB / path.lstrip("/"))
+            return self._file(os.path.join(WEB, path.lstrip("/")))
         self._send(404, b"Not found", "text/plain; charset=utf-8")
 
     def do_POST(self):
@@ -179,14 +184,17 @@ class Handler(BaseHTTPRequestHandler):
             return self._json(200, {"ok": True, "started": True, "kind": "generer"})
         self._json(404, {"error": "Not found"})
 
-    def _file(self, path: Path) -> None:
-        path = path.resolve()
-        if not str(path).startswith(str(ROOT.resolve())) or not path.is_file():
+    def _file(self, path: str) -> None:
+        root = os.path.abspath(ROOT)
+        path = os.path.abspath(path)
+        if not (path == root or path.startswith(root + os.sep)) or not os.path.isfile(path):
             return self._send(404, b"Not found", "text/plain; charset=utf-8")
-        ctype = mimetypes.guess_type(str(path))[0] or "application/octet-stream"
-        if ctype.startswith("text/") or path.suffix in {".js", ".css", ".html", ".json"}:
+        ctype = mimetypes.guess_type(path)[0] or "application/octet-stream"
+        ext = os.path.splitext(path)[1]
+        if ctype.startswith("text/") or ext in {".js", ".css", ".html", ".json"}:
             ctype = f"{ctype}; charset=utf-8" if "charset" not in ctype else ctype
-        self._send(200, path.read_bytes(), ctype)
+        with open(path, "rb") as f:
+            self._send(200, f.read(), ctype)
 
 
 def main() -> None:

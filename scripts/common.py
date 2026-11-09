@@ -1,28 +1,27 @@
 """Chemins et utilitaires partagés (stdlib only)."""
 
-from __future__ import annotations
-
 import json
 import os
-from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent
-DATA = ROOT / "data"
-WEB = ROOT / "web"
-EXPORTS = DATA / "exports"
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+DATA = os.path.join(ROOT, "data")
+WEB = os.path.join(ROOT, "web")
+EXPORTS = os.path.join(DATA, "exports")
 
-CANDIDATS_PATH = DATA / "candidats.json"
-SELECTION_PATH = DATA / "selection.json"
-RAPPORT_PATH = DATA / "rapport.md"
-SOURCES_PATH = ROOT / "sources.json"
-INSTRUCTIONS_PATH = ROOT / "instructions.md"
+CANDIDATS_PATH = os.path.join(DATA, "candidats.json")
+SELECTION_PATH = os.path.join(DATA, "selection.json")
+RAPPORT_PATH = os.path.join(DATA, "rapport.md")
+SOURCES_PATH = os.path.join(ROOT, "sources.json")
+INSTRUCTIONS_PATH = os.path.join(ROOT, "instructions.md")
 
 
-def load_dotenv(path: Path | None = None) -> None:
-    env_path = path or (ROOT / ".env")
-    if not env_path.is_file():
+def load_dotenv(path: str | None = None) -> None:
+    env_path = path or os.path.join(ROOT, ".env")
+    if not os.path.isfile(env_path):
         return
-    for line in env_path.read_text(encoding="utf-8").splitlines():
+    with open(env_path, encoding="utf-8") as f:
+        lines = f.read().splitlines()
+    for line in lines:
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
             continue
@@ -33,15 +32,19 @@ def load_dotenv(path: Path | None = None) -> None:
             os.environ[key] = value
 
 
-def read_json(path: Path, default=None):
-    if not path.is_file():
+def read_json(path: str, default=None):
+    if not os.path.isfile(path):
         return default
-    return json.loads(path.read_text(encoding="utf-8"))
+    with open(path, encoding="utf-8") as f:
+        return json.loads(f.read())
 
 
-def write_json(path: Path, data) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+def write_json(path: str, data) -> None:
+    parent = os.path.dirname(path)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    with open(path, "w", encoding="utf-8") as f:
+        f.write(json.dumps(data, ensure_ascii=False, indent=2) + "\n")
 
 
 def reset_pipeline_json() -> None:
@@ -51,7 +54,7 @@ def reset_pipeline_json() -> None:
 
 
 def load_sources() -> dict:
-    if not SOURCES_PATH.is_file():
+    if not os.path.isfile(SOURCES_PATH):
         raise SystemExit(f"Aucune config sources : {SOURCES_PATH}")
     return read_json(SOURCES_PATH)
 

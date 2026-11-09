@@ -1,14 +1,12 @@
 #!/usr/bin/env python3
 """2e appel agent cloud : résumé des articles sélectionnés → data/rapport.md."""
 
-from __future__ import annotations
-
 import json
+import os
 import re
 import sys
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from common import RAPPORT_PATH, api_key, selected_items
 from cursor_agent import run_prompt
@@ -74,8 +72,11 @@ def main() -> None:
     items = selected_items()
     print("Appel agent cloud Cursor (rédaction du résumé)…", flush=True)
     md = extract_rapport_md(run_prompt(key, build_prompt(items)))
-    RAPPORT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    RAPPORT_PATH.write_text(md.rstrip() + "\n", encoding="utf-8")
+    parent = os.path.dirname(RAPPORT_PATH)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
+    with open(RAPPORT_PATH, "w", encoding="utf-8") as f:
+        f.write(md.rstrip() + "\n")
     print(f"Rapport → {RAPPORT_PATH}")
 
 

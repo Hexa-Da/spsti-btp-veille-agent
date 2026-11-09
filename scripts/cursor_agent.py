@@ -1,7 +1,5 @@
 """Client HTTP minimal Cloud Agents API (stdlib). Une seule implémentation pour collect + rapport."""
 
-from __future__ import annotations
-
 import json
 import time
 import urllib.error

@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """Collecte + tri via agent cloud Cursor → data/candidats.json (titre + extrait seulement)."""
 
-from __future__ import annotations
-
+import os
 import sys
 from datetime import datetime, timezone
-from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from common import CANDIDATS_PATH, INSTRUCTIONS_PATH, api_key, load_sources, write_json
 from cursor_agent import extract_json_block, run_prompt
@@ -51,11 +49,12 @@ Si aucune nouveauté pertinente : {{"items": []}}.
 def main() -> None:
     key = api_key()
     sources = load_sources()
-    doctrine = (
-        INSTRUCTIONS_PATH.read_text(encoding="utf-8")
-        if INSTRUCTIONS_PATH.is_file()
-        else "Retenir ce qui touche la médecine du travail / inaptitude."
-    )
+    if os.path.isfile(INSTRUCTIONS_PATH):
+        with open(INSTRUCTIONS_PATH, encoding="utf-8") as f:
+            doctrine = f.read()
+    else:
+        doctrine = "Retenir ce qui touche la médecine du travail / inaptitude."
+
     print("Appel agent cloud Cursor (collecte + tri)…", flush=True)
     raw = run_prompt(key, build_prompt(sources, doctrine))
     parsed = extract_json_block(raw)

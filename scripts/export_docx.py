@@ -1,16 +1,14 @@
 #!/usr/bin/env python3
 """Met en forme rapport.md en .docx OOXML sans dépendance."""
 
-from __future__ import annotations
-
+import os
 import re
 import sys
 import zipfile
 from datetime import date
-from pathlib import Path
 from xml.sax.saxutils import escape
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from common import EXPORTS, RAPPORT_PATH
 
@@ -97,11 +95,12 @@ def build_document_xml(md: str) -> str:
 
 
 def main() -> None:
-    if not RAPPORT_PATH.is_file():
+    if not os.path.isfile(RAPPORT_PATH):
         raise SystemExit(f"Pas de rapport : {RAPPORT_PATH} (lancez rapport.py)")
-    md = RAPPORT_PATH.read_text(encoding="utf-8")
-    EXPORTS.mkdir(parents=True, exist_ok=True)
-    out = EXPORTS / f"veille-{date.today().isoformat()}.docx"
+    with open(RAPPORT_PATH, encoding="utf-8") as f:
+        md = f.read()
+    os.makedirs(EXPORTS, exist_ok=True)
+    out = os.path.join(EXPORTS, f"veille-{date.today().isoformat()}.docx")
     document_xml = build_document_xml(md)
     with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("[Content_Types].xml", CONTENT_TYPES)
