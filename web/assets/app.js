@@ -1,9 +1,12 @@
 (function () {
   var listEl = document.getElementById("list");
+  var panelEl = document.getElementById("panel");
+  var spinnerEl = document.getElementById("spinner");
+  var emptyMsg = document.getElementById("empty-msg");
+  var busyMsg = document.getElementById("busy-msg");
+  var itemTpl = document.getElementById("tpl-item");
   var metaEl = document.getElementById("meta");
   var statusEl = document.getElementById("status");
-  var busyEl = document.getElementById("busy");
-  var busyMsg = document.getElementById("busy-msg");
   var btnCollect = document.getElementById("btn-collect");
   var btnGen = document.getElementById("btn-gen");
   var items = [];
@@ -19,10 +22,30 @@
     btnGen.disabled = busy || selected.size === 0;
   }
 
+  function syncPanel() {
+    listEl.hidden = busy;
+    if (busy) {
+      panelEl.hidden = false;
+      spinnerEl.hidden = false;
+      emptyMsg.hidden = true;
+      busyMsg.hidden = false;
+      return;
+    }
+    spinnerEl.hidden = true;
+    busyMsg.hidden = true;
+    if (items.length) {
+      panelEl.hidden = true;
+      emptyMsg.hidden = true;
+      return;
+    }
+    panelEl.hidden = false;
+    emptyMsg.hidden = false;
+  }
+
   function setBusy(on, msg) {
     busy = !!on;
-    busyEl.hidden = !on;
-    busyMsg.textContent = msg || "Patientez…";
+    if (on) busyMsg.textContent = msg || "";
+    syncPanel();
     btnCollect.disabled = on;
     syncGenEnabled();
   }
@@ -56,46 +79,25 @@
   }
 
   function render() {
-    if (!items.length) {
-      listEl.innerHTML =
-        '<div class="empty">Aucun candidat. Cliquez sur <strong>Lancer la Collecte</strong> pour démarrer.</div>';
-      return;
-    }
-    listEl.innerHTML = "";
+    listEl.replaceChildren();
+    syncPanel();
     items.forEach(function (it) {
-      var div = document.createElement("div");
-      div.className = "item";
       var id = it.id;
-      var checked = selected.has(id) ? " checked" : "";
-      var date = it.date || "—";
-      var source = it.source || "—";
-      var extrait = it.extrait || "";
-      var url = it.url || "#";
-      div.innerHTML =
-        "<label>" +
-        '<input type="checkbox" data-id="' +
-        id +
-        '"' +
-        checked +
-        ">" +
-        "<div>" +
-        "<h2></h2>" +
-        '<p class="meta"></p>' +
-        '<p class="extrait"></p>' +
-        '<p><a target="_blank" rel="noopener"></a></p>' +
-        "</div></label>";
-      div.querySelector("h2").textContent = it.titre || "(sans titre)";
-      div.querySelector(".meta").textContent = source + " · " + date;
-      div.querySelector(".extrait").textContent = extrait;
-      var a = div.querySelector("a");
-      a.href = url;
-      a.textContent = "Ouvrir la source";
-      div.querySelector("input").addEventListener("change", function (e) {
+      var node = itemTpl.content.cloneNode(true);
+      var input = node.querySelector("input");
+      input.checked = selected.has(id);
+      input.addEventListener("change", function (e) {
         if (e.target.checked) selected.add(id);
         else selected.delete(id);
         syncGenEnabled();
       });
-      listEl.appendChild(div);
+      node.querySelector('[data-field="titre"]').textContent =
+        it.titre || "(sans titre)";
+      node.querySelector('[data-field="meta"]').textContent =
+        (it.source || "—") + " · " + (it.date || "—");
+      node.querySelector('[data-field="extrait"]').textContent = it.extrait || "";
+      node.querySelector('[data-field="url"]').href = it.url || "#";
+      listEl.appendChild(node);
     });
     syncGenEnabled();
   }
@@ -169,7 +171,7 @@
 
   btnCollect.onclick = function () {
     if (busy) return;
-    setBusy(true, "Collecte + tri en cours… Cela peut prendre plusieurs minutes.");
+    setBusy(true, "Collecte selon vos instructions en cours…");
     setStatus("");
     postJob("/api/collecter")
       .then(function (res) {
@@ -200,7 +202,7 @@
       setStatus("Cochez au moins un article avant de générer.");
       return;
     }
-    setBusy(true, "Résumé agent + export Word… Cela peut prendre plusieurs minutes.");
+    setBusy(true, "Rédaction du rapport et export Word en cours…");
     setStatus("");
     saveSelection()
       .then(function () {

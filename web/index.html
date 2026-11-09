@@ -2,32 +2,43 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Veille médecine du travail</title>
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
-  <header>
-    <div class="wrap">
-      <h1>Veille médecine du travail</h1>
-      <p class="period">1. Collecter → 2. Cocher les articles → 3. Générer le Word</p>
+  <header class="header">
+    <h1 class="title">Veille médecine du travail</h1>
+    <p class="subtitle">Collecter → Cocher les articles → Générer le Word</p>
+    <p class="meta" id="meta"></p>
+    <p id="status" role="status"></p>
+    <div class="buttons">
+      <button type="button" id="btn-collect">Lancer la Collecte</button>
+      <button type="button" id="btn-gen">Générer le Word</button>
     </div>
   </header>
-  <main class="wrap">
-    <p id="meta" class="note"></p>
-    <div class="toolbar">
-      <button type="button" id="btn-collect" class="primary">Lancer la Collecte</button>
-      <button type="button" id="btn-gen" class="primary">Générer le Word</button>
+  <main class="main">
+    <div id="panel" class="panel" hidden>
+      <div id="spinner" class="spinner" hidden></div>
+      <p id="empty-msg">Aucun candidat. Cliquez sur <strong>Lancer la Collecte</strong> pour démarrer.</p>
+      <p id="busy-msg" hidden></p>
     </div>
-    <p id="status" class="note" role="status"></p>
     <div id="list"></div>
   </main>
-  <div id="busy" class="busy" hidden aria-live="assertive" aria-busy="true">
-    <div class="busy-card">
-      <div class="spinner" aria-hidden="true"></div>
-      <p id="busy-msg">Patientez…</p>
+  <template id="tpl-item">
+    <div class="item">
+      <label>
+        <input type="checkbox">
+        <div>
+          <h2 data-field="titre"></h2>
+          <p data-field="extrait"></p>
+          <p>
+            <a data-field="url" target="_blank" rel="noopener">Ouvrir la source</a>
+            <span data-field="meta"></span>
+          </p>
+        </div>
+      </label>
     </div>
-  </div>
+  </template>
   <script src="/assets/app.js"></script>
 </body>
 </html>

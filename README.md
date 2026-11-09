@@ -18,7 +18,7 @@ Puis fermer/rouvrir le terminal (pour le PATH). Vérifier : `python --version`.
 CURSOR_API_KEY=crsr_...
 ```
 
-Les sources pour la collecte sont à mettre dans `sources.json` à la racine du projet.
+Les sources et les instructions pour la collecte sont à mettre dans `sources.json` et `instructions.md`.
 
 ## Usage
 
@@ -26,20 +26,7 @@ Double-clic sur `lancer.bat` : l’application s’ouvre dans le navigateur.
 
 1. **Collecter** — 1er appel agent
 2. **Cocher** les articles à garder
-3. **Générer le Word** — 2e appel agent
-
-## Ajouter une source
-
-Éditez `sources.json`, ajoutez une entrée :
-
-```json
-{
-  "id": "ma-source",
-  "label": "Mon flux",
-  "type": "rss",
-  "url": "https://exemple.org/flux.xml"
-}
-```
+3. **Générer le Word** — 2nd appel agent
 
 ## Structure
 

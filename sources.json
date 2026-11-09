@@ -2,26 +2,18 @@
   "sources": [
     {
       "id": "legifrance-travail",
-      "label": "Décrets Ministère du travail",
-      "type": "rss",
       "url": "https://legifrss.org/latest?nature=decret&author=Minist%C3%A8re%20du%20travail"
     },
     {
       "id": "legifrance-medecine-travail",
-      "label": "Légifrance — médecine du travail",
-      "type": "rss",
       "url": "https://legifrss.org/latest?q=m%C3%A9decine%20du%20travail"
     },
     {
       "id": "legifrance-inaptitude",
-      "label": "Légifrance — inaptitude",
-      "type": "rss",
       "url": "https://legifrss.org/latest?q=inaptitude"
     },
     {
       "id": "judilibre-medecine",
-      "label": "Judilibre — médecin du travail / inaptitude",
-      "type": "html_search",
       "url": "https://www.courdecassation.fr/recherche-judilibre?search_api_fulltext=inaptitude%20m%C3%A9decin%20du%20travail"
     }
   ]
