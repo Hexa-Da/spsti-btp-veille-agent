@@ -9,6 +9,7 @@
   var items = [];
   var selected = new Set();
   var busy = false;
+  var POLL_MS = 2000;
 
   function setStatus(msg) {
     statusEl.textContent = msg || "";
@@ -26,14 +27,32 @@
     syncGenEnabled();
   }
 
+  function networkHint(e) {
+    return (
+      "Serveur injoignable (" +
+      e +
+      "). Relancez l'UI (lancer.bat ou python3 scripts/serve.py) puis rechargez la page."
+    );
+  }
+
   function logsText(data) {
-    if (!data || !data.logs) return JSON.stringify(data || {});
+    if (!data || !data.logs) return (data && data.error) || JSON.stringify(data || {});
     return data.logs
       .map(function (l) {
         return (l.stderr || l.stdout || "").trim();
       })
       .filter(Boolean)
       .join("\n");
+  }
+
+  function formatParis(iso) {
+    var d = new Date(iso);
+    if (isNaN(d.getTime())) return iso;
+    return new Intl.DateTimeFormat("fr-FR", {
+      timeZone: "Europe/Paris",
+      dateStyle: "short",
+      timeStyle: "short",
+    }).format(d);
   }
 
   function render() {
@@ -95,7 +114,7 @@
       items = cand.items || [];
       selected = new Set(sel.selectedIds || []);
       metaEl.textContent = cand.collectedAt
-        ? "Collecte du " + cand.collectedAt + " — " + items.length + " article(s)"
+        ? "Collecte du " + formatParis(cand.collectedAt) + " — " + items.length + " article(s)"
         : items.length
           ? items.length + " article(s)"
           : "Pas encore de collecte.";
@@ -114,12 +133,36 @@
     });
   }
 
-  function postJob(url) {
-    return fetch(url, { method: "POST" }).then(function (r) {
-      return r.json().then(function (data) {
-        return { httpOk: r.ok, data: data };
+  function pollJob() {
+    return fetch("/api/job")
+      .then(function (r) {
+        return r.json();
+      })
+      .then(function (data) {
+        if (data.status === "running") {
+          return new Promise(function (resolve) {
+            setTimeout(resolve, POLL_MS);
+          }).then(pollJob);
+        }
+        if (data.status !== "done") {
+          return { httpOk: false, data: { ok: false, error: "Pas de tâche en cours." } };
+        }
+        return { httpOk: !!data.ok, data: data };
       });
-    });
+  }
+
+  function postJob(url) {
+    return fetch(url, { method: "POST" })
+      .then(function (r) {
+        return r.json().then(function (data) {
+          return { httpOk: r.ok, data: data };
+        });
+      })
+      .then(function (res) {
+        if (!res.httpOk || !res.data.ok) return res;
+        if (res.data.started) return pollJob();
+        return res;
+      });
   }
 
   syncGenEnabled();
@@ -144,7 +187,7 @@
         });
       })
       .catch(function (e) {
-        setStatus("Erreur collecte : " + e);
+        setStatus("Erreur collecte : " + networkHint(e));
       })
       .then(function () {
         setBusy(false);
@@ -168,10 +211,12 @@
           setStatus("Échec génération : " + (res.data.error || logsText(res.data)));
           return;
         }
-        setStatus("OK — fichier : " + (res.data.docx || "voir data/exports/"));
+        return load().then(function () {
+          setStatus("OK — fichier : " + (res.data.docx || "voir data/exports/"));
+        });
       })
       .catch(function (e) {
-        setStatus("Erreur génération : " + e);
+        setStatus("Erreur génération : " + networkHint(e));
       })
       .then(function () {
         setBusy(false);
@@ -179,6 +224,6 @@
   };
 
   load().catch(function (e) {
-    setStatus("Impossible de charger les candidats : " + e);
+    setStatus("Impossible de charger les candidats : " + networkHint(e));
   });
 })();
