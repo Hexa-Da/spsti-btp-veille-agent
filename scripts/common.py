@@ -44,6 +44,12 @@ def write_json(path: Path, data) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def reset_pipeline_json() -> None:
+    """Vide candidats + sélection après un export Word réussi."""
+    write_json(CANDIDATS_PATH, {"collectedAt": None, "items": []})
+    write_json(SELECTION_PATH, {"selectedIds": [], "updatedAt": None})
+
+
 def load_sources() -> dict:
     if not SOURCES_PATH.is_file():
         raise SystemExit(f"Aucune config sources : {SOURCES_PATH}")

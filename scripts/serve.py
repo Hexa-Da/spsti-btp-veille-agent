@@ -23,12 +23,15 @@ from common import (
     SELECTION_PATH,
     WEB,
     read_json,
+    reset_pipeline_json,
     write_json,
 )
 
 PORT = 8787
 _SCRIPTS = ROOT / "scripts"
 _job_lock = threading.Lock()
+# État du job long (collecte / génération) — le POST démarre, GET /api/job suit.
+_job: dict = {"status": "idle"}
 
 
 def _run_scripts(names: list[str]) -> tuple[bool, list[dict]]:
@@ -51,6 +54,57 @@ def _run_scripts(names: list[str]) -> tuple[bool, list[dict]]:
         if proc.returncode != 0:
             return False, logs
     return True, logs
+
+
+def _start_job(kind: str, scripts: list[str]) -> bool:
+    """Démarre un job en arrière-plan. False si un autre tourne déjà."""
+    if not _job_lock.acquire(blocking=False):
+        return False
+
+    def run() -> None:
+        global _job
+        try:
+            ok, logs = _run_scripts(scripts)
+            if not ok:
+                _job = {"status": "done", "ok": False, "kind": kind, "logs": logs}
+                return
+            if kind == "collecter":
+                data = read_json(CANDIDATS_PATH, default={"items": []})
+                _job = {
+                    "status": "done",
+                    "ok": True,
+                    "kind": kind,
+                    "count": len(data.get("items") or []),
+                    "collectedAt": data.get("collectedAt"),
+                    "logs": logs,
+                }
+                return
+            # generer
+            reset_pipeline_json()
+            exports = sorted(EXPORTS.glob("veille-*.docx")) if EXPORTS.is_dir() else []
+            latest = str(exports[-1]) if exports else None
+            _job = {
+                "status": "done",
+                "ok": True,
+                "kind": kind,
+                "docx": latest,
+                "logs": logs,
+            }
+        except Exception as exc:  # noqa: BLE001 — remonter à l'UI
+            _job = {
+                "status": "done",
+                "ok": False,
+                "kind": kind,
+                "error": str(exc),
+                "logs": [],
+            }
+        finally:
+            _job_lock.release()
+
+    global _job
+    _job = {"status": "running", "kind": kind}
+    threading.Thread(target=run, daemon=True).start()
+    return True
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -84,6 +138,8 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path in ("/", "/index.html"):
             return self._file(WEB / "index.html")
+        if path == "/api/job":
+            return self._json(200, _job)
         if path == "/api/candidats":
             data = read_json(CANDIDATS_PATH, default={"collectedAt": None, "items": []})
             return self._json(200, data)
@@ -114,36 +170,13 @@ class Handler(BaseHTTPRequestHandler):
             write_json(SELECTION_PATH, data)
             return self._json(200, data)
         if path == "/api/collecter":
-            if not _job_lock.acquire(blocking=False):
+            if not _start_job("collecter", ["collect.py"]):
                 return self._json(409, {"ok": False, "error": "Une tâche est déjà en cours."})
-            try:
-                ok, logs = _run_scripts(["collect.py"])
-            finally:
-                _job_lock.release()
-            if not ok:
-                return self._json(500, {"ok": False, "logs": logs})
-            data = read_json(CANDIDATS_PATH, default={"items": []})
-            return self._json(
-                200,
-                {
-                    "ok": True,
-                    "count": len(data.get("items") or []),
-                    "collectedAt": data.get("collectedAt"),
-                    "logs": logs,
-                },
-            )
+            return self._json(200, {"ok": True, "started": True, "kind": "collecter"})
         if path == "/api/generer":
-            if not _job_lock.acquire(blocking=False):
+            if not _start_job("generer", ["rapport.py", "export_docx.py"]):
                 return self._json(409, {"ok": False, "error": "Une tâche est déjà en cours."})
-            try:
-                ok, logs = _run_scripts(["rapport.py", "export_docx.py"])
-            finally:
-                _job_lock.release()
-            if not ok:
-                return self._json(500, {"ok": False, "logs": logs})
-            exports = sorted(EXPORTS.glob("veille-*.docx")) if EXPORTS.is_dir() else []
-            latest = str(exports[-1]) if exports else None
-            return self._json(200, {"ok": True, "docx": latest, "logs": logs})
+            return self._json(200, {"ok": True, "started": True, "kind": "generer"})
         self._json(404, {"error": "Not found"})
 
     def _file(self, path: Path) -> None:
