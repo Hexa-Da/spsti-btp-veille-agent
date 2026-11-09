@@ -9,7 +9,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import CANDIDATS_PATH, DOCTRINE, api_key, load_sources, write_json
+from common import CANDIDATS_PATH, INSTRUCTIONS_PATH, api_key, load_sources, write_json
 from cursor_agent import extract_json_block, run_prompt
 
 
@@ -51,10 +51,9 @@ Si aucune nouveauté pertinente : {{"items": []}}.
 def main() -> None:
     key = api_key()
     sources = load_sources()
-    doctrine_path = DOCTRINE / "instructions.md"
     doctrine = (
-        doctrine_path.read_text(encoding="utf-8")
-        if doctrine_path.is_file()
+        INSTRUCTIONS_PATH.read_text(encoding="utf-8")
+        if INSTRUCTIONS_PATH.is_file()
         else "Retenir ce qui touche la médecine du travail / inaptitude."
     )
     print("Appel agent cloud Cursor (collecte + tri)…", flush=True)

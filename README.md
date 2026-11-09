@@ -46,7 +46,7 @@ Double-clic sur `lancer.bat` : l’application s’ouvre dans le navigateur.
 ```text
 lancer.bat       ouvre l'UI
 sources.json     liste des sources
-doctrine/        consignes de collecte
+instructions.md  consignes de collecte
 scripts/         collect, serve, rapport, export
 web/             interface
 data/            candidats, sélection, rapport, exports/

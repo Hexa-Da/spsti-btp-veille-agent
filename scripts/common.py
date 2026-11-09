@@ -8,7 +8,6 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DATA = ROOT / "data"
-DOCTRINE = ROOT / "doctrine"
 WEB = ROOT / "web"
 EXPORTS = DATA / "exports"
 
@@ -16,6 +15,7 @@ CANDIDATS_PATH = DATA / "candidats.json"
 SELECTION_PATH = DATA / "selection.json"
 RAPPORT_PATH = DATA / "rapport.md"
 SOURCES_PATH = ROOT / "sources.json"
+INSTRUCTIONS_PATH = ROOT / "instructions.md"
 
 
 def load_dotenv(path: Path | None = None) -> None:
