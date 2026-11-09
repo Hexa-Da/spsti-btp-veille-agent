@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Met en forme rapport.md (+ liste retenus) en .docx OOXML sans dépendance."""
+"""Met en forme rapport.md en .docx OOXML sans dépendance."""
 
 from __future__ import annotations
 
@@ -12,7 +12,7 @@ from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import EXPORTS, RAPPORT_PATH, selected_items
+from common import EXPORTS, RAPPORT_PATH
 
 CONTENT_TYPES = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -62,6 +62,8 @@ def md_to_paragraphs(md: str) -> list[str]:
     for line in md.splitlines():
         line = line.rstrip()
         if not line.strip():
+            # ligne vide Markdown → paragraphe vide Word (sinon tout est collé)
+            paras.append(_p(""))
             continue
         # titres markdown → gras
         m = re.match(r"^(#{1,6})\s+(.*)$", line)
@@ -73,17 +75,16 @@ def md_to_paragraphs(md: str) -> list[str]:
             paras.append(_p("• " + _plain(re.sub(r"^[-*]\s+", "", line))))
             continue
         paras.append(_p(_plain(line)))
+    # trim vides en tête / queue
+    while paras and paras[0] == _p(""):
+        paras.pop(0)
+    while paras and paras[-1] == _p(""):
+        paras.pop()
     return paras
 
 
-def build_document_xml(md: str, items: list[dict] | None) -> str:
+def build_document_xml(md: str) -> str:
     parts = md_to_paragraphs(md)
-    if items:
-        parts.append(_p("Liste des liens retenus", bold=True))
-        for it in items:
-            titre = it.get("titre") or "(sans titre)"
-            url = it.get("url") or ""
-            parts.append(_p(f"{titre} — {url}"))
     body = "\n".join(parts) if parts else _p("(Rapport vide)")
     return f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
@@ -99,10 +100,9 @@ def main() -> None:
     if not RAPPORT_PATH.is_file():
         raise SystemExit(f"Pas de rapport : {RAPPORT_PATH} (lancez rapport.py)")
     md = RAPPORT_PATH.read_text(encoding="utf-8")
-    items = selected_items()
     EXPORTS.mkdir(parents=True, exist_ok=True)
     out = EXPORTS / f"veille-{date.today().isoformat()}.docx"
-    document_xml = build_document_xml(md, items)
+    document_xml = build_document_xml(md)
     with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("[Content_Types].xml", CONTENT_TYPES)
         zf.writestr("_rels/.rels", RELS)
