@@ -22,10 +22,6 @@ body {
 .meta {
   font-size: 1.25rem;
 }
-#status {
-  color: #c00;
-  text-align: center;
-}
 
 .buttons {
   display: flex;
@@ -36,6 +32,9 @@ body {
   padding: 0.5rem 1rem;
   font-size: 1rem;
   color: #fff;
+}
+.buttons button:disabled {
+  opacity: 0.5;
 }
 #btn-collect {
   background: #28a745;

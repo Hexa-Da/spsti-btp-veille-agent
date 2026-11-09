@@ -27,9 +27,7 @@ from common import (
 
 PORT = 8787
 _SCRIPTS = os.path.join(ROOT, "scripts")
-_job_lock = threading.Lock()
-# État du job long (collecte / génération) — le POST démarre, GET /api/job suit.
-_job: dict = {"status": "idle"}
+_busy = threading.Lock()
 
 
 def _run_scripts(names: list[str]) -> tuple[bool, list[dict]]:
@@ -54,62 +52,42 @@ def _run_scripts(names: list[str]) -> tuple[bool, list[dict]]:
     return True, logs
 
 
-def _start_job(kind: str, scripts: list[str]) -> bool:
-    """Démarre un job en arrière-plan. False si un autre tourne déjà."""
-    if not _job_lock.acquire(blocking=False):
-        return False
-
-    def run() -> None:
-        global _job
-        try:
-            ok, logs = _run_scripts(scripts)
-            if not ok:
-                _job = {"status": "done", "ok": False, "kind": kind, "logs": logs}
-                return
-            if kind == "collecter":
-                data = read_json(CANDIDATS_PATH, default={"items": []})
-                _job = {
-                    "status": "done",
-                    "ok": True,
-                    "kind": kind,
-                    "count": len(data.get("items") or []),
-                    "collectedAt": data.get("collectedAt"),
-                    "logs": logs,
-                }
-                return
-            # generer
-            reset_pipeline_json()
-            if os.path.isdir(EXPORTS):
-                exports = sorted(
-                    os.path.join(EXPORTS, name)
-                    for name in os.listdir(EXPORTS)
-                    if name.startswith("veille-") and name.endswith(".docx")
-                )
-            else:
-                exports = []
-            latest = exports[-1] if exports else None
-            _job = {
-                "status": "done",
+def _run_action(kind: str, scripts: list[str]) -> tuple[int, dict]:
+    """Exécute les scripts et renvoie (code HTTP, payload JSON)."""
+    if not _busy.acquire(blocking=False):
+        return 409, {"ok": False, "error": "Une tâche est déjà en cours."}
+    try:
+        ok, logs = _run_scripts(scripts)
+        if not ok:
+            return 200, {"ok": False, "kind": kind, "logs": logs}
+        if kind == "collecter":
+            data = read_json(CANDIDATS_PATH, default={"items": []})
+            return 200, {
                 "ok": True,
                 "kind": kind,
-                "docx": latest,
+                "count": len(data.get("items") or []),
+                "collectedAt": data.get("collectedAt"),
                 "logs": logs,
             }
-        except Exception as exc:  # noqa: BLE001 — remonter à l'UI
-            _job = {
-                "status": "done",
-                "ok": False,
-                "kind": kind,
-                "error": str(exc),
-                "logs": [],
-            }
-        finally:
-            _job_lock.release()
-
-    global _job
-    _job = {"status": "running", "kind": kind}
-    threading.Thread(target=run, daemon=True).start()
-    return True
+        reset_pipeline_json()
+        if os.path.isdir(EXPORTS):
+            exports = sorted(
+                os.path.join(EXPORTS, name)
+                for name in os.listdir(EXPORTS)
+                if name.startswith("veille-") and name.endswith(".docx")
+            )
+        else:
+            exports = []
+        return 200, {
+            "ok": True,
+            "kind": kind,
+            "docx": exports[-1] if exports else None,
+            "logs": logs,
+        }
+    except Exception as exc:  # noqa: BLE001 — remonter à l'UI
+        return 200, {"ok": False, "kind": kind, "error": str(exc), "logs": []}
+    finally:
+        _busy.release()
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -143,8 +121,6 @@ class Handler(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path in ("/", "/index.html"):
             return self._file(os.path.join(WEB, "index.html"))
-        if path == "/api/job":
-            return self._json(200, _job)
         if path == "/api/candidats":
             data = read_json(CANDIDATS_PATH, default={"collectedAt": None, "items": []})
             return self._json(200, data)
@@ -175,13 +151,11 @@ class Handler(BaseHTTPRequestHandler):
             write_json(SELECTION_PATH, data)
             return self._json(200, data)
         if path == "/api/collecter":
-            if not _start_job("collecter", ["collect.py"]):
-                return self._json(409, {"ok": False, "error": "Une tâche est déjà en cours."})
-            return self._json(200, {"ok": True, "started": True, "kind": "collecter"})
+            code, data = _run_action("collecter", ["collect.py"])
+            return self._json(code, data)
         if path == "/api/generer":
-            if not _start_job("generer", ["rapport.py", "export_docx.py"]):
-                return self._json(409, {"ok": False, "error": "Une tâche est déjà en cours."})
-            return self._json(200, {"ok": True, "started": True, "kind": "generer"})
+            code, data = _run_action("generer", ["rapport.py", "export_docx.py"])
+            return self._json(code, data)
         self._json(404, {"error": "Not found"})
 
     def _file(self, path: str) -> None:
