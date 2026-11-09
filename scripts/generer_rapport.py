@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Enchaîne enrich → rapport → export (après sélection)."""
+"""Enchaîne rapport → export (après sélection)."""
 
 from __future__ import annotations
 
@@ -19,7 +19,6 @@ def run(name: str) -> None:
 
 
 def main() -> None:
-    run("enrich.py")
     run("rapport.py")
     run("export_docx.py")
     print("Terminé.")

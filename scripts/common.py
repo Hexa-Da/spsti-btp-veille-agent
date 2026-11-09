@@ -14,7 +14,6 @@ EXPORTS = DATA / "exports"
 
 CANDIDATS_PATH = DATA / "candidats.json"
 SELECTION_PATH = DATA / "selection.json"
-RETENUS_PATH = DATA / "retenus.json"
 RAPPORT_PATH = DATA / "rapport.md"
 SOURCES_PATH = ROOT / "sources.json"
 
@@ -49,6 +48,37 @@ def load_sources() -> dict:
     if not SOURCES_PATH.is_file():
         raise SystemExit(f"Aucune config sources : {SOURCES_PATH}")
     return read_json(SOURCES_PATH)
+
+
+def selected_items() -> list[dict]:
+    """Candidats cochés (ordre de selection.json)."""
+    candidats = read_json(CANDIDATS_PATH)
+    selection = read_json(SELECTION_PATH, default={"selectedIds": []})
+    if not candidats or not candidats.get("items"):
+        raise SystemExit(f"Aucun candidat : lancez d'abord collect.py ({CANDIDATS_PATH})")
+    ids = selection.get("selectedIds") or []
+    if not ids:
+        raise SystemExit("Aucune sélection : ouvrez l'UI et cochez des articles.")
+    by_id = {it["id"]: it for it in candidats["items"] if it.get("id")}
+    items = []
+    for item_id in ids:
+        base = by_id.get(item_id)
+        if not base:
+            print(f"Ignore id inconnu : {item_id}")
+            continue
+        items.append(
+            {
+                "id": base.get("id"),
+                "titre": base.get("titre"),
+                "url": base.get("url"),
+                "date": base.get("date"),
+                "source": base.get("source"),
+                "extrait": base.get("extrait"),
+            }
+        )
+    if not items:
+        raise SystemExit("Aucun article sélectionné valide.")
+    return items
 
 
 def api_key() -> str:

@@ -89,10 +89,9 @@ class Handler(BaseHTTPRequestHandler):
             write_json(SELECTION_PATH, data)
             return self._json(200, data)
         if path == "/api/generer":
-            # enrich → rapport → export (rapport nécessite CURSOR_API_KEY)
+            # rapport → export (nécessite CURSOR_API_KEY)
             scripts = ROOT / "scripts"
             steps = [
-                [sys.executable, str(scripts / "enrich.py")],
                 [sys.executable, str(scripts / "rapport.py")],
                 [sys.executable, str(scripts / "export_docx.py")],
             ]

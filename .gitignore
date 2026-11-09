@@ -5,7 +5,6 @@ __pycache__
 # Données runtime
 data/candidats.json
 data/selection.json
-data/retenus.json
 data/rapport.md
 data/exports/*.docx
 

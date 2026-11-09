@@ -24,8 +24,7 @@ Les sources pour la collecte sont à mettre dans `sources.json` à la racine du 
 
 1. `01-collecter.bat` — collecte + tri (1er appel)
 2. `02-selection.bat` — cochez les articles à garder dans l'UI puis Enregistrer
-3. `03-rapport.bat` — enrichit les articles séléectionné, résumé (2nd appel), Word dans `data/exports/`
-
+3. `03-rapport.bat` — résume les articles séléectionné (2nd appel)
 ## Ajouter une source
 
 Éditez `sources.json`, ajoutez une entrée :
@@ -44,7 +43,7 @@ Les sources pour la collecte sont à mettre dans `sources.json` à la racine du 
 ```text
 sources.json     liste des sources
 doctrine/        consignes de collecte
-scripts/         collect, serve, enrich, rapport, export
+scripts/         collect, serve, rapport, export
 web/             page de sélection
-data/            candidats, sélection, retenus, rapport, exports/
+data/            candidats, sélection, rapport, exports/
 ```

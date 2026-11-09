@@ -12,7 +12,7 @@ from xml.sax.saxutils import escape
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
-from common import EXPORTS, RAPPORT_PATH, RETENUS_PATH, read_json
+from common import EXPORTS, RAPPORT_PATH, selected_items
 
 CONTENT_TYPES = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -76,11 +76,11 @@ def md_to_paragraphs(md: str) -> list[str]:
     return paras
 
 
-def build_document_xml(md: str, retenus: dict | None) -> str:
+def build_document_xml(md: str, items: list[dict] | None) -> str:
     parts = md_to_paragraphs(md)
-    if retenus and retenus.get("items"):
+    if items:
         parts.append(_p("Liste des liens retenus", bold=True))
-        for it in retenus["items"]:
+        for it in items:
             titre = it.get("titre") or "(sans titre)"
             url = it.get("url") or ""
             parts.append(_p(f"{titre} — {url}"))
@@ -99,10 +99,10 @@ def main() -> None:
     if not RAPPORT_PATH.is_file():
         raise SystemExit(f"Pas de rapport : {RAPPORT_PATH} (lancez rapport.py)")
     md = RAPPORT_PATH.read_text(encoding="utf-8")
-    retenus = read_json(RETENUS_PATH, default=None)
+    items = selected_items()
     EXPORTS.mkdir(parents=True, exist_ok=True)
     out = EXPORTS / f"veille-{date.today().isoformat()}.docx"
-    document_xml = build_document_xml(md, retenus)
+    document_xml = build_document_xml(md, items)
     with zipfile.ZipFile(out, "w", compression=zipfile.ZIP_DEFLATED) as zf:
         zf.writestr("[Content_Types].xml", CONTENT_TYPES)
         zf.writestr("_rels/.rels", RELS)

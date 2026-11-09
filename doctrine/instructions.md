@@ -1,6 +1,6 @@
 # Instructions — veille médecine du travail
 
-Tu aides à produire une veille simple sur le **droit et la pratique de la médecine du travail** en France.
+Tu aides à produire une veille simple sur le **droit et la pratique de la médecine du travail pour le secteur du BTP** en France et plus précisément en Franche-Compté.
 
 ## Ce qu’on retient
 
