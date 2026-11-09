@@ -52,3 +52,35 @@ button:disabled { opacity: 0.55; cursor: wait; }
 .item a { color: var(--accent); }
 footer { padding: 2rem 0; font-size: 0.85rem; color: var(--muted); }
 .empty { padding: 1.5rem; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); }
+
+.busy {
+  position: fixed;
+  inset: 0;
+  background: rgba(28, 36, 48, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 1rem;
+}
+.busy[hidden] { display: none; }
+.busy-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 1.5rem 1.75rem;
+  max-width: 26rem;
+  text-align: center;
+  box-shadow: 0 12px 40px rgba(28, 36, 48, 0.18);
+}
+.busy-card p { margin: 0.85rem 0 0; color: var(--muted); line-height: 1.4; }
+.spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  margin: 0 auto;
+  border: 3px solid var(--line);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }

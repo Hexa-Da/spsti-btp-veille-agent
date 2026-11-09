@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""UI locale de sélection (stdlib http.server). Aucun appel Cursor."""
+"""UI locale (stdlib http.server) : collecte, sélection, rapport Word."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import json
 import mimetypes
 import subprocess
 import sys
+import threading
 import webbrowser
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -26,6 +27,30 @@ from common import (
 )
 
 PORT = 8787
+_SCRIPTS = ROOT / "scripts"
+_job_lock = threading.Lock()
+
+
+def _run_scripts(names: list[str]) -> tuple[bool, list[dict]]:
+    logs = []
+    for name in names:
+        proc = subprocess.run(
+            [sys.executable, str(_SCRIPTS / name)],
+            cwd=str(ROOT),
+            capture_output=True,
+            text=True,
+        )
+        logs.append(
+            {
+                "cmd": name,
+                "code": proc.returncode,
+                "stdout": proc.stdout,
+                "stderr": proc.stderr,
+            }
+        )
+        if proc.returncode != 0:
+            return False, logs
+    return True, logs
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -88,26 +113,34 @@ class Handler(BaseHTTPRequestHandler):
             }
             write_json(SELECTION_PATH, data)
             return self._json(200, data)
+        if path == "/api/collecter":
+            if not _job_lock.acquire(blocking=False):
+                return self._json(409, {"ok": False, "error": "Une tâche est déjà en cours."})
+            try:
+                ok, logs = _run_scripts(["collect.py"])
+            finally:
+                _job_lock.release()
+            if not ok:
+                return self._json(500, {"ok": False, "logs": logs})
+            data = read_json(CANDIDATS_PATH, default={"items": []})
+            return self._json(
+                200,
+                {
+                    "ok": True,
+                    "count": len(data.get("items") or []),
+                    "collectedAt": data.get("collectedAt"),
+                    "logs": logs,
+                },
+            )
         if path == "/api/generer":
-            # rapport → export (nécessite CURSOR_API_KEY)
-            scripts = ROOT / "scripts"
-            steps = [
-                [sys.executable, str(scripts / "rapport.py")],
-                [sys.executable, str(scripts / "export_docx.py")],
-            ]
-            logs = []
-            for cmd in steps:
-                proc = subprocess.run(cmd, cwd=str(ROOT), capture_output=True, text=True)
-                logs.append(
-                    {
-                        "cmd": " ".join(cmd),
-                        "code": proc.returncode,
-                        "stdout": proc.stdout,
-                        "stderr": proc.stderr,
-                    }
-                )
-                if proc.returncode != 0:
-                    return self._json(500, {"ok": False, "logs": logs})
+            if not _job_lock.acquire(blocking=False):
+                return self._json(409, {"ok": False, "error": "Une tâche est déjà en cours."})
+            try:
+                ok, logs = _run_scripts(["rapport.py", "export_docx.py"])
+            finally:
+                _job_lock.release()
+            if not ok:
+                return self._json(500, {"ok": False, "logs": logs})
             exports = sorted(EXPORTS.glob("veille-*.docx")) if EXPORTS.is_dir() else []
             latest = str(exports[-1]) if exports else None
             return self._json(200, {"ok": True, "docx": latest, "logs": logs})
@@ -125,7 +158,7 @@ class Handler(BaseHTTPRequestHandler):
 
 def main() -> None:
     url = f"http://127.0.0.1:{PORT}/"
-    print(f"Sélection veille : {url}")
+    print(f"Veille médecine du travail : {url}")
     print("Ctrl+C pour arrêter.")
     webbrowser.open(url)
     ThreadingHTTPServer(("127.0.0.1", PORT), Handler).serve_forever()

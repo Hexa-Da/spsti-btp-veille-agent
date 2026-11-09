@@ -3,22 +3,20 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Veille médecine du travail — sélection</title>
+  <title>Veille médecine du travail</title>
   <link rel="stylesheet" href="/assets/styles.css">
 </head>
 <body>
   <header>
     <div class="wrap">
       <h1>Veille médecine du travail</h1>
-      <p class="period">Cochez les articles à garder, puis générez le rapport Word.</p>
+      <p class="period">1. Collecter → 2. Cocher les articles → 3. Générer le Word</p>
     </div>
   </header>
   <main class="wrap">
     <p id="meta" class="note"></p>
     <div class="toolbar">
-      <button type="button" id="btn-all">Tout cocher</button>
-      <button type="button" id="btn-none">Tout décocher</button>
-      <button type="button" id="btn-save" class="primary">Enregistrer la sélection</button>
+      <button type="button" id="btn-collect" class="primary">Lancer la Collecte</button>
       <button type="button" id="btn-gen" class="primary">Générer le Word</button>
     </div>
     <p id="status" class="note" role="status"></p>
@@ -27,6 +25,12 @@
   <footer>
     <div class="wrap">Les synthèses ne remplacent pas la lecture des textes officiels.</div>
   </footer>
+  <div id="busy" class="busy" hidden aria-live="assertive" aria-busy="true">
+    <div class="busy-card">
+      <div class="spinner" aria-hidden="true"></div>
+      <p id="busy-msg">Patientez…</p>
+    </div>
+  </div>
   <script src="/assets/app.js"></script>
 </body>
 </html>

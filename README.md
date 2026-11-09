@@ -1,6 +1,6 @@
 # Veille médecine du travail (Windows)
 
-Agent cloud Cursor pour collecte et trie des articles, puis rédaction de rapport Word.
+Agent cloud Cursor pour collecte et tri des articles, puis rédaction de rapport Word.
 
 ## Install
 
@@ -15,16 +15,19 @@ Puis fermer/rouvrir le terminal (pour le PATH). Vérifier : `python --version`.
 2. Crée `.env` et coller votre clé :
 
 ```
- CURSOR_API_KEY=crsr_...
+CURSOR_API_KEY=crsr_...
 ```
 
-Les sources pour la collecte sont à mettre dans `sources.json` à la racine du projet
+Les sources pour la collecte sont à mettre dans `sources.json` à la racine du projet.
 
-## Usage (double-clic)
+## Usage
 
-1. `01-collecter.bat` — collecte + tri (1er appel)
-2. `02-selection.bat` — cochez les articles à garder dans l'UI puis Enregistrer
-3. `03-rapport.bat` — résume les articles séléectionné (2nd appel)
+Double-clic sur `lancer.bat` : l’application s’ouvre dans le navigateur.
+
+1. **Collecter** — 1er appel agent
+2. **Cocher** les articles à garder
+3. **Générer le Word** — 2e appel agent
+
 ## Ajouter une source
 
 Éditez `sources.json`, ajoutez une entrée :
@@ -41,9 +44,10 @@ Les sources pour la collecte sont à mettre dans `sources.json` à la racine du 
 ## Structure
 
 ```text
+lancer.bat       ouvre l'UI
 sources.json     liste des sources
 doctrine/        consignes de collecte
 scripts/         collect, serve, rapport, export
-web/             page de sélection
+web/             interface
 data/            candidats, sélection, rapport, exports/
 ```
