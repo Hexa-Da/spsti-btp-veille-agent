@@ -19,13 +19,13 @@
   }
 
   function syncToggle() {
-    const allOn = items.length > 0 && selected.size === items.length;
-    btnToggle.disabled = busy || items.length === 0;
-    btnToggle.textContent = allOn ? "Tout décocher" : "Tout cocher";
+    const allChecked = items.length > 0 && selected.size == items.length;
+    btnToggle.disabled = busy || items.length == 0;
+    btnToggle.textContent = allChecked ? "Tout décocher" : "Tout cocher";
   }
 
   function syncGenEnabled() {
-    btnGen.disabled = busy || selected.size === 0;
+    btnGen.disabled = busy || selected.size == 0;
   }
 
   function syncPanel() {
@@ -72,7 +72,6 @@
       const id = it.id;
       const node = itemTpl.content.cloneNode(true);
       const input = node.querySelector("input");
-      input.checked = selected.has(id);
       input.addEventListener("change", function (e) {
         if (e.target.checked) selected.add(id);
         else selected.delete(id);
@@ -106,14 +105,6 @@
       });
   }
 
-  btnToggle.onclick = function () {
-    if (selected.size === items.length) selected = new Set();
-    else selected = new Set(items.map(function (it) { return it.id; }));
-    render();
-    syncToggle();
-    syncGenEnabled();
-  };
-
   function postAction(url) {
     return fetch(url, { method: "POST" }).then(function (r) {
       return r.json().then(function (data) {
@@ -131,6 +122,16 @@
       .finally(function () {
         setBusy(false);
       });
+  };
+
+  btnToggle.onclick = function () {
+    const allChecked = selected.size == items.length;
+    selected = allChecked ? new Set() : new Set(items.map(function (it) { return it.id; }));
+    listEl.querySelectorAll("input").forEach(function (input) {
+      input.checked = !allChecked;
+    });
+    syncToggle();
+    syncGenEnabled();
   };
 
   btnGen.onclick = function () {
