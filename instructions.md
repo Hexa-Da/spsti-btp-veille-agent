@@ -1,27 +1,22 @@
-# Instructions — veille médecine du travail
+# Instructions : veille médecine du travail / SST (BTP)
 
-Tu aides à produire une veille simple sur le **droit et la pratique de la médecine du travail pour le secteur du BTP** en France et plus précisément en Franche-Compté.
+Tu aides à produire une veille pour un SPSTI BTP (France, priorité Bourgogne-Franche-Comté).
 
-## Ce qu’on retient
+## Ce qu’on retient (par priorité)
 
-- Textes officiels et jurisprudence touchant la santé au travail, l’inaptitude, le suivi individuel, les obligations de l’employeur, le rôle du médecin du travail / SPSTI.
-- Evolutions réglementaires (décrets, arrêtés) du ministère du Travail ou de la Santé dès qu’elles concernent la médecine du travail.
-- Arrêts (ex. chambre sociale) sur inaptitude, reclassement, avis du médecin du travail, obligation de sécurité.
+1. Médecine du travail / SPSTI : suivi individuel, VIP/SIR, inaptitude, reclassement, avis du médecin du travail, PDP / désinsertion, maintien en emploi, prevention des risques professionnels, coopération MPC–services.
+2. AT/MP et reconnaissance des maladies professionnelles (tableaux, comités, LFSS quand ça change la procédure).
+3. Obligation de sécurité, harcèlement / risques psychosociaux dès que ça touche la santé au travail.
+4. Prévention BTP et risques métier : amiante, plomb, silice, risque chimique, TMS, risques routiers, chute de hauteur, chaleur/froid, DUERP, accidents de chantier, guides INRS / OPPBTP / FORSAPRE.
+5. Textes officiels (décrets, arrêtés, JO) et jurisprudence (Cass. soc., etc.) dès qu’ils portent sur les points ci-dessus.
 
 ## Ce qu’on écarte
 
-- Promotionnel et publi-rédactionnel.
-- Nominations, vacances de poste, prix, extensions de conventions collectives sans lien santé au travail.
-- Sujets de politique générale sans lien direct avec la médecine du travail.
-- Doublons déjà couverts récemment.
+- Droit social général sans lien santé/sécurité (CDD « purs », cotisations, retraite, élus, charges) sauf si le fond est AT/MP, inaptitude ou obligation de sécurité.
+- Promotionnel, webinars sans contenu utile, nominations, vacances de poste, pathologie grand public hors travail.
+- Doublons / reprises sans nouveauté.
 
-## Ton et forme
+## Format candidat
 
-- Sobre, factuel, au présent.
-- Titres sans accroche.
-- Synthèses courtes ; ne pas inventer de liens.
-- Alignement en cas de doute : texte officiel d’abord.
-
-## Collecte (agent)
-
-Pour chaque candidat : `id`, `titre`, `url`, `date`, `source`, `extrait` (court). **Pas** le texte intégral.
+Pour chaque item : `id`, `titre`, `url`, `date`, `source`, `extrait` (2–4 phrases factuelles, pas le texte intégral).
+Le titre doit être lisible tel quel dans une revue (accroche + enjeu), pas un slug technique.
