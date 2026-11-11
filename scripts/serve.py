@@ -70,18 +70,19 @@ def _run_action(kind: str, scripts: list[str]) -> tuple[int, dict]:
                 "logs": logs,
             }
         reset_pipeline_json()
+        latest = None
         if os.path.isdir(EXPORTS):
-            exports = sorted(
+            candidates = [
                 os.path.join(EXPORTS, name)
                 for name in os.listdir(EXPORTS)
-                if name.startswith("veille-") and name.endswith(".docx")
-            )
-        else:
-            exports = []
+                if name.endswith(".docx") and not name.startswith("._")
+            ]
+            if candidates:
+                latest = max(candidates, key=os.path.getmtime)
         return 200, {
             "ok": True,
             "kind": kind,
-            "docx": exports[-1] if exports else None,
+            "docx": latest,
             "logs": logs,
         }
     except Exception as exc:  # noqa: BLE001 — remonter à l'UI

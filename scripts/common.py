@@ -2,17 +2,41 @@
 
 import json
 import os
+from datetime import date
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 DATA = os.path.join(ROOT, "data")
 WEB = os.path.join(ROOT, "web")
 EXPORTS = os.path.join(DATA, "exports")
+TEMPLATE_DOCX = os.path.join(ROOT, "templates", "veille-juridique.docx")
 
 CANDIDATS_PATH = os.path.join(DATA, "candidats.json")
 SELECTION_PATH = os.path.join(DATA, "selection.json")
 RAPPORT_PATH = os.path.join(DATA, "rapport.md")
 SOURCES_PATH = os.path.join(ROOT, "sources.json")
 INSTRUCTIONS_PATH = os.path.join(ROOT, "instructions.md")
+
+_MOIS = (
+    "janvier",
+    "février",
+    "mars",
+    "avril",
+    "mai",
+    "juin",
+    "juillet",
+    "août",
+    "septembre",
+    "octobre",
+    "novembre",
+    "décembre",
+)
+
+
+def veille_title(day: date | None = None) -> str:
+    """Titre d'en-tête / fichier : date du jour, pas la période des articles."""
+    d = day or date.today()
+    return f"Veille juridique du {d.day} {_MOIS[d.month - 1]} {d.year}"
+
 
 
 def load_dotenv(path: str | None = None) -> None:
