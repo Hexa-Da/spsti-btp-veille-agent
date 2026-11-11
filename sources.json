@@ -75,6 +75,14 @@
     {
       "id": "dreets-autres_publications", 
       "url": "https://bourgogne-franche-comte.dreets.gouv.fr/autres-publications"
+    },
+    {
+      "id": "carsat-bfc-actualites",
+      "url": "https://maintienemploi.carsat-bfc.fr/actualites/"
+    },
+    {
+      "id": "anact-actualites",
+      "url": "https://www.anact.fr/actualites?f[0]=territory:1452"
     }
   ]
 }
