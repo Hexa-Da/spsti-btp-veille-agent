@@ -13,8 +13,68 @@
       "url": "https://legifrss.org/latest?q=inaptitude"
     },
     {
+      "id": "legifrance-code_du_travail",
+      "url": "https://www.legifrance.gouv.fr/codes/section_lc/LEGITEXT000006072050/LEGISCTA000006132338/#LEGISCTA000006132338"
+    },
+    {
       "id": "judilibre-medecine",
-      "url": "https://www.courdecassation.fr/recherche-judilibre?search_api_fulltext=inaptitude%20m%C3%A9decin%20du%20travail"
+      "url": "https://www.courdecassation.fr/recherche-judilibre?search_api_fulltext=m%C3%A9decine%20du%20travail"
+    },
+    {
+      "id": "preventionbtp-reflexes",
+      "url": "https://www.preventionbtp.fr/reflexe-prevention/reflexes"
+    },
+    {
+      "id": "preventionbtp-actualites",
+      "url": "https://www.preventionbtp.fr/actualites"
+    },
+    {
+      "id": "preventionbtp-barometre",
+      "url": "https://www.preventionbtp.fr/barometre"
+    },
+    {
+      "id": "forsapre-documentations",
+      "url": "https://forsapre.fr/documentations#publications"
+    },
+    {
+      "id": "forsapre-fiches_fast",
+      "url": "https://forsapre.fr/fiches_fast"
+    },
+    {
+      "id": "forsapre-fiches_fan",
+      "url": "https://forsapre.fr/fiches_fan"
+    },
+    {
+      "id": "gnmstbtp-actualites",
+      "url": "https://gnmstbtp.org/actualites/"
+    },
+    {
+      "id": "inrs-actualites",
+      "url": "https://www.inrs.fr/actualites.html"
+    },
+    {
+      "id": "cnpmt-actualites",
+      "url": "https://cnpmt.org/actualites/"
+    },
+    {
+      "id": "cnom-publications",
+      "url": "https://www.conseil-national.medecin.fr/publications?categories%5B%5D=28"
+    },
+    {
+      "id": "gouv-suivi_de_la_sante_au_travail",
+      "url": "https://travail-emploi.gouv.fr/suivi-de-la-sante-au-travail"
+    },
+    {
+      "id": "gouv-dispositions_particulieres_et_postes_risques",
+      "url": "https://travail-emploi.gouv.fr/dispositions-particulieres-et-postes-risques"
+    },
+    {
+      "id": "gouv-prevention_des_risques",
+      "url": "https://travail-emploi.gouv.fr/prevention-des-risques"
+    },
+    {
+      "id": "dreets-autres_publications", 
+      "url": "https://bourgogne-franche-comte.dreets.gouv.fr/autres-publications"
     }
   ]
 }
