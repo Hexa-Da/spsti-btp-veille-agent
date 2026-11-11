@@ -39,6 +39,9 @@ body {
 #btn-collect {
   background: #28a745;
 }
+#btn-toggle {
+  background: #6c757d;
+}
 #btn-gen {
   background: #007bff;
 }

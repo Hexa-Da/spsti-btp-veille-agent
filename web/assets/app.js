@@ -7,6 +7,7 @@
   const itemTpl = document.getElementById("tpl-item");
   const metaEl = document.getElementById("meta");
   const btnCollect = document.getElementById("btn-collect");
+  const btnToggle = document.getElementById("btn-toggle");
   const btnGen = document.getElementById("btn-gen");
   let items = [];
   let selected = new Set();
@@ -15,6 +16,12 @@
 
   function syncCollectEnabled() {
     btnCollect.disabled = busy || hasCollected;
+  }
+
+  function syncToggle() {
+    const allOn = items.length > 0 && selected.size === items.length;
+    btnToggle.disabled = busy || items.length === 0;
+    btnToggle.textContent = allOn ? "Tout décocher" : "Tout cocher";
   }
 
   function syncGenEnabled() {
@@ -46,6 +53,7 @@
     if (on) busyMsg.textContent = msg;
     syncPanel();
     syncCollectEnabled();
+    syncToggle();
     syncGenEnabled();
   }
 
@@ -64,9 +72,11 @@
       const id = it.id;
       const node = itemTpl.content.cloneNode(true);
       const input = node.querySelector("input");
+      input.checked = selected.has(id);
       input.addEventListener("change", function (e) {
         if (e.target.checked) selected.add(id);
         else selected.delete(id);
+        syncToggle();
         syncGenEnabled();
       });
       node.querySelector('[data-field="titre"]').textContent = it.titre;
@@ -91,9 +101,18 @@
           : "Pas encore de collecte.";
         render();
         syncCollectEnabled();
+        syncToggle();
         syncGenEnabled();
       });
   }
+
+  btnToggle.onclick = function () {
+    if (selected.size === items.length) selected = new Set();
+    else selected = new Set(items.map(function (it) { return it.id; }));
+    render();
+    syncToggle();
+    syncGenEnabled();
+  };
 
   function postAction(url) {
     return fetch(url, { method: "POST" }).then(function (r) {
