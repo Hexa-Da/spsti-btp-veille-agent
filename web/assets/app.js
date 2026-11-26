@@ -141,8 +141,12 @@
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ selectedIds: Array.from(selected) }),
     })
-      .then(function () {
-        return postAction("/api/generer");
+      .then(function (r) {
+        // Lire le body : sinon HTTP/1.1 peut bloquer le POST /api/generer suivant.
+        return r.json().then(function () {
+          if (!r.ok) return false;
+          return postAction("/api/generer");
+        });
       })
       .then(function (ok) {
         if (ok) return load();
