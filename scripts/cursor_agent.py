@@ -32,7 +32,7 @@ def _request(
             return json.loads(raw) if raw else {}
     except urllib.error.HTTPError as e:
         detail = e.read().decode("utf-8", errors="replace")
-        raise SystemExit(f"API Cursor {method} {path} → HTTP {e.code}: {detail}") from e
+        raise SystemExit(f"API Cursor {method} {path} -> HTTP {e.code}: {detail}") from e
     except urllib.error.URLError as e:
         raise SystemExit(f"API Cursor injoignable : {e}") from e
 

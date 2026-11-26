@@ -105,10 +105,22 @@
       });
   }
 
+  function failMsg(data) {
+    if (data && data.error) return data.error;
+    var logs = (data && data.logs) || [];
+    for (var i = logs.length - 1; i >= 0; i--) {
+      if (logs[i].code) {
+        var t = ((logs[i].stderr || "") + "\n" + (logs[i].stdout || "")).trim();
+        return t || logs[i].cmd + " a échoué";
+      }
+    }
+    return "Échec de l'opération.";
+  }
+
   function postAction(url) {
     return fetch(url, { method: "POST" }).then(function (r) {
       return r.json().then(function (data) {
-        return r.ok && data.ok;
+        return { ok: r.ok && data.ok, data: data };
       });
     });
   }
@@ -116,8 +128,9 @@
   btnCollect.onclick = function () {
     setBusy(true, "Collecte selon vos instructions en cours…");
     postAction("/api/collecter")
-      .then(function (ok) {
-        if (ok) return load();
+      .then(function (res) {
+        if (res.ok) return load();
+        alert(failMsg(res.data));
       })
       .finally(function () {
         setBusy(false);
@@ -144,12 +157,15 @@
       .then(function (r) {
         // Lire le body : sinon HTTP/1.1 peut bloquer le POST /api/generer suivant.
         return r.json().then(function () {
-          if (!r.ok) return false;
+          if (!r.ok) {
+            return { ok: false, data: { error: "Enregistrement de la sélection refusé." } };
+          }
           return postAction("/api/generer");
         });
       })
-      .then(function (ok) {
-        if (ok) return load();
+      .then(function (res) {
+        if (res.ok) return load();
+        alert(failMsg(res.data));
       })
       .finally(function () {
         setBusy(false);

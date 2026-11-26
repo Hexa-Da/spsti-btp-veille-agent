@@ -80,7 +80,7 @@ def main() -> None:
     today = datetime.now(timezone.utc).date()
     since = today - timedelta(days=WINDOW_DAYS)
 
-    print("Appel agent cloud Cursor (collecte + tri)…", flush=True)
+    print("Appel agent cloud Cursor (collecte + tri)...", flush=True)
     raw = run_prompt(key, build_prompt(sources, doctrine, since, today))
     parsed = extract_json_block(raw)
     if isinstance(parsed, list):
@@ -118,7 +118,7 @@ def main() -> None:
         "items": cleaned,
     }
     write_json(CANDIDATS_PATH, payload)
-    msg = f"{len(cleaned)} candidat(s) → {CANDIDATS_PATH} (fenêtre {since} → {today}"
+    msg = f"{len(cleaned)} candidat(s) -> {CANDIDATS_PATH} (fenetre {since} -> {today}"
     if dropped:
         msg += f", {dropped} hors fenêtre écarté(s)"
     print(msg + ")")

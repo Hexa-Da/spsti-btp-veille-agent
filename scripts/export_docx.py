@@ -215,7 +215,7 @@ def main() -> None:
     title = veille_title()
     out = os.path.join(EXPORTS, safe_filename(title))
     build_docx(md, out, title=title)
-    print(f"Word → {out}")
+    print(f"Word -> {out}")
 
 
 if __name__ == "__main__":

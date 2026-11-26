@@ -74,14 +74,14 @@ def extract_rapport_md(text: str) -> str:
 def main() -> None:
     key = api_key()
     items = selected_items()
-    print("Appel agent cloud Cursor (rédaction du résumé)…", flush=True)
+    print("Appel agent cloud Cursor (redaction du resume)...", flush=True)
     md = extract_rapport_md(run_prompt(key, build_prompt(items)))
     parent = os.path.dirname(RAPPORT_PATH)
     if parent:
         os.makedirs(parent, exist_ok=True)
     with open(RAPPORT_PATH, "w", encoding="utf-8") as f:
         f.write(md.rstrip() + "\n")
-    print(f"Rapport → {RAPPORT_PATH}")
+    print(f"Rapport -> {RAPPORT_PATH}")
 
 
 if __name__ == "__main__":
