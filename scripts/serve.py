@@ -33,11 +33,15 @@ _busy = threading.Lock()
 def _run_scripts(names: list[str]) -> tuple[bool, list[dict]]:
     logs = []
     for name in names:
+        # encoding explicite : sous Windows text=True décode en cp1252 et plante
+        # sur les prints UTF-8 (ex. « Rapport → ») avant export_docx.py.
         proc = subprocess.run(
             [sys.executable, os.path.join(_SCRIPTS, name)],
             cwd=ROOT,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            errors="replace",
         )
         logs.append(
             {
